@@ -41,7 +41,7 @@ class TimeSeriesRetrieverPipeline(RetrieverPipeline):
     def get_daily(self):
         res = {}
         for symbol in self.symbols:
-            output, _ = self.retriever.get_daily_adjusted(
+            output, _ = self.retriever.get_daily(
                 symbol, outputsize='full')
             output = self.marshal_output(output, symbol=symbol)
             res[symbol] = output

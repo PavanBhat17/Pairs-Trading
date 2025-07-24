@@ -20,8 +20,12 @@ class DevelopmentConfig(Config):
     lower_range = '2018-04-01'
     upper_range = None
     trade_prop = .05
+    entry_zscore = 1.0  # New: configurable entry threshold
+    exit_zscore = 0.0   # New: configurable exit threshold
 
 class ProductionConfig(Config):
+    entry_zscore = 1.0
+    exit_zscore = 0.0
     pass
 
 

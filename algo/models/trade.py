@@ -129,7 +129,7 @@ class TradeHolder:
     def delete_trade(self, trade_id: uuid.uuid4):
         if trade_id in self.trades:
             del self.trades[trade_id]
-        raise ValueError('Invalid Trade ID!')
+        # Do nothing if not present
 
     def to_pandas(self):
         res = defaultdict(list)

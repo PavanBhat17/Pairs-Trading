@@ -8,10 +8,11 @@ from ..models.indicators import PriceRatioSimpleMovingAverage, PriceRatio
 
 class PairsTradingPipeline(object):
 
-    def __init__(self, interval_one, interval_two):
+    def __init__(self, interval_one, interval_two, config=None):
         self._sma_one = PriceRatioSimpleMovingAverage(interval_one)
         self._sma_two = PriceRatioSimpleMovingAverage(interval_two)
         self._price_ratio = PriceRatio(interval_two)
+        self.config = config
 
     @property
     def sma_one(self):
@@ -56,7 +57,14 @@ class PairsTradingPipeline(object):
 
     @marshal_trade
     def evaluate_trade(self):
-        if self.zscore >= 1:
+        entry_z = self.config.entry_zscore if self.config else 1.0
+        exit_z = self.config.exit_zscore if self.config else 0.0
+        # Entry signals
+        if self.zscore >= entry_z:
             return ('short', 'long')
-        if self.zscore <= -1:
+        if self.zscore <= -entry_z:
             return ('long', 'short')
+        # Optionally, you can add exit logic here if you want to signal closing trades
+        # For example, if abs(zscore) < exit_zscore, signal to close positions
+        # (This would require additional logic in the trading pipeline to act on exit signals)
+        return None

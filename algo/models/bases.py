@@ -5,7 +5,7 @@ from alpha_vantage.timeseries import TimeSeries
 from alpha_vantage.cryptocurrencies import CryptoCurrencies
 from alpha_vantage.foreignexchange import ForeignExchange
 from alpha_vantage.fundamentaldata import FundamentalData
-from alpha_vantage.sectorperformance import SectorPerformances
+# from alpha_vantage.sectorperformance import SectorPerformances
 from alpha_vantage.techindicators import TechIndicators
 
 from ..config import config
@@ -30,10 +30,10 @@ class FundamentalData(FundamentalData):
     def __init__(self, *args, **kwargs):
         super().__init__(key=config.alpha_api_key, *args, **kwargs)
 
-class SectorPerformances(SectorPerformances): 
+# class SectorPerformances(SectorPerformances): 
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(key=config.alpha_api_key, *args, **kwargs)
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(key=config.alpha_api_key, *args, **kwargs)
 
 class TechIndicators(TechIndicators):
 

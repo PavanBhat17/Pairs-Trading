@@ -12,7 +12,7 @@ from .pipelines.retriever import TimeSeriesRetrieverPipeline
 from .config import config, Config
 
 ALGO_SELECTION = {
-    'pairs': PairsTradingPipeline(config.interval_one, config.interval_two)
+    'pairs': PairsTradingPipeline(config.interval_one, config.interval_two, config=config)
 }
 
 
@@ -26,6 +26,7 @@ class AlgoTradingPipeline:
         self._retriver = TimeSeriesRetrieverPipeline(
             config.symbols, config.lower_range, config.upper_range)
         self.config = config
+        self.open_positions = []  # Track open trades for exit logic
 
     @property
     def account(self):
@@ -85,6 +86,31 @@ class AlgoTradingPipeline:
         trade_eval = self.evaluate_trade(data_one, data_two)
         new_trades = self.open_trades(trade_eval, asset_dic)
         self.update_account(new_trades)
+        # Track open positions for exit logic
+        for trade in new_trades:
+            if trade:
+                self.open_positions.append(trade)
+        # Check for exit condition
+        self.close_trades(asset_dic)
+
+    def close_trades(self, asset_dic: Dict[str, Union[Asset, QuoteAsset]]):
+        # If abs(zscore) < exit_zscore, close all open positions
+        zscore = abs(self.algorithm.zscore)
+        exit_z = self.config.exit_zscore
+        if zscore < exit_z and self.open_positions:
+            print(f"[Z-Score Exit] Closing all positions: zscore={zscore:.4f} < exit_zscore={exit_z}")
+            for trade in self.open_positions:
+                # Close trade using the appropriate pipeline
+                if trade.trade_type == 'long':
+                    self.longs.trade_holder.get_trade(trade.id).close_trade(trade.asset.price)
+                    self.longs.closed_holder.add_trade(trade)
+                    self.longs.trade_holder.delete_trade(trade.id)
+                elif trade.trade_type == 'short':
+                    self.shorts.trade_holder.get_trade(trade.id).close_trade(trade.asset.price)
+                    self.shorts.closed_holder.add_trade(trade)
+                    self.shorts.trade_holder.delete_trade(trade.id)
+                self.account.execute_trade(trade)
+            self.open_positions = []
 
     def manage_risk(self, asset_dic: Dict[str, Union[Asset, QuoteAsset]]):
         closed_risky_longs = self.longs.manage_risk(asset_dic, self.config.stop_loss)

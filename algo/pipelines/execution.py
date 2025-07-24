@@ -30,7 +30,9 @@ class TradeExecutionPipeline:
 
     def manage_risk(self, asset_dic: Union[Asset, QuoteAsset], stop_loss: float):
         trades = []
-        for k, v in self.trade_holder.trades.items():
+        # Iterate over a static list of keys to avoid modifying the dict during iteration
+        for k in list(self.trade_holder.trades.keys()):
+            v = self.trade_holder.trades[k]
             asset = asset_dic[v.symbol]
             if v.evaluate_risk(asset.price, stop_loss):
                 trades.append(self.close_trade(k, asset_dic))
@@ -55,9 +57,11 @@ class LongExecutionPipeline(TradeExecutionPipeline):
         self.trade_holder.add_trade(trade)
         return trade
 
-    def close_trade(self, trade_id: uuid.uuid4, current_price: float):
+    def close_trade(self, trade_id: uuid.uuid4, asset_dic: dict):
         trade = self.trade_holder.get_trade(trade_id)
-        trade.close_trade(current_price)
+        asset = asset_dic[trade.symbol]
+        price = asset.price
+        trade.close_trade(price)
         self.closed_holder.add_trade(trade)
         self.trade_holder.delete_trade(trade_id)
         return trade
@@ -75,9 +79,11 @@ class ShortExecutionPipeline(TradeExecutionPipeline):
         self.trade_holder.add_trade(trade)
         return trade
 
-    def close_trade(self, trade_id: uuid.uuid4, current_price: float):
+    def close_trade(self, trade_id: uuid.uuid4, asset_dic: dict):
         trade = self.trade_holder.get_trade(trade_id)
-        trade.close_trade(trade_id)
+        asset = asset_dic[trade.symbol]
+        price = asset.price
+        trade.close_trade(price)
         self.closed_holder.add_trade(trade)
         self.trade_holder.delete_trade(trade_id)
         return trade
