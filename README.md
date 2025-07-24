@@ -49,7 +49,7 @@ After running a backtest, the framework regresses strategy returns against a mar
 
 ## Attribution
 - **Original Author:** Alexander Jeanis
-- **Forked & Extended by:** [Your Name]
+- **Forked & Extended by:** Pavan Bhat
   - Multi-sector robustness
   - Alpha/beta/CAPM analytics
   - Z-score threshold optimization
